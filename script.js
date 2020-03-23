@@ -32,7 +32,7 @@ function startAudioVisual() {
   src.connect(analyser);
   analyser.connect(context.destination);
 
-  analyser.fftSize = 2 ** 8;
+  analyser.fftSize = 2 ** 7;
 
   let bufferLength = analyser.frequencyBinCount;
 
@@ -43,12 +43,6 @@ function startAudioVisual() {
 
   const barWidth = Math.floor(WIDTH / bufferLength - 1);
   const heightCountSection = 17;
-
-  function linerInterpolation(from, to, step, range) {
-    if (from > to) return to + ((from - to) / range) * step;
-
-    return from + ((to - from) / range) * step;
-  }
 
   function drawHzBar(count, currentHeight) {
     const leftDelta = (barWidth + 1) * count;
@@ -128,8 +122,6 @@ function startAudioVisual() {
     );
     ctxTopRed.fillRect(leftDelta, HEIGHT - tempValue[count] + 17, barWidth, 2);
   }
-
-  console.log(tempValue);
 
   function renderFrame() {
     analyser.getByteFrequencyData(dataArray);
