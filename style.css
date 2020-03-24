@@ -1,5 +1,5 @@
 html {
-  background-color: rgb(10, 12, 20);
+  background-color: #0E1F52;
 }
 
 #thefile {
@@ -19,7 +19,7 @@ html {
   z-index: 6;
 }
 
-#top-red-canvas {
+#level-3-canvas {
   position: fixed;
   margin: auto;
   top: 0;
@@ -29,7 +29,7 @@ html {
   z-index: 10;
 }
 
-#bg-canvas {
+#level-1-canvas {
   position: fixed;
   margin: auto;
   top: 0;
@@ -37,6 +37,16 @@ html {
   right: 0;
   bottom: 0;
   z-index: 4;
+}
+
+#level-4-canvas {
+  position: fixed;
+  margin: auto;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 14;
 }
 
 audio {

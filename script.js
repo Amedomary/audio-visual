@@ -1,144 +1,195 @@
+var stats = new Stats();
+stats.setMode(0);
+stats.domElement.style.position = "absolute";
+stats.domElement.style.left = "0px";
+stats.domElement.style.top = "0px";
+document.body.appendChild(stats.domElement);
+
+const width = window.innerWidth - 100;
+const height = window.innerHeight - 400;
+
+const geometry = {
+  lampWidth: 32,
+  lampHeight: 16,
+  gap: 2,
+  lampHeightCount: 17,
+  stepForLampFromData: 255 / 17,
+  vertCell: 16 + 2,
+  horCell: 32 + 2,
+  capHeight: 5,
+};
+
+const color = {
+  gap: "rgb(6,21,65)",
+  bgBar: "rgb(86,40,191)",
+  cap: "rgb(255, 63, 99)",
+};
+
+// level 1 canvas
+const canvasLevel1 = document.getElementById("level-1-canvas");
+canvasLevel1.width = width;
+canvasLevel1.height = height;
+const ctxLevel1 = canvasLevel1.getContext("2d");
+ctxLevel1.fillStyle = "rgb(90, 40, 108)";
+
+// level 2 canvas
+const canvasLevel2 = document.getElementById("canvas");
+canvasLevel2.width = width;
+canvasLevel2.height = height;
+const ctxLevel2 = canvasLevel2.getContext("2d");
+
+// level 3 canvas
+const canvasLevel3 = document.getElementById("level-3-canvas");
+canvasLevel3.width = width;
+canvasLevel3.height = height;
+const ctxLevel3 = canvasLevel3.getContext("2d");
+
+// level 4 canvas
+const canvasLevel4 = document.getElementById("level-4-canvas");
+canvasLevel4.width = width;
+canvasLevel4.height = height;
+const ctxLevel4 = canvasLevel4.getContext("2d");
+ctxLevel4.fillStyle = color.cap;
+
+
+const gradientBottom1 = ctxLevel2.createLinearGradient(
+  0,
+  height,
+  0,
+  height - geometry.vertCell * geometry.lampHeightCount
+);
+gradientBottom1.addColorStop(0, "rgba(206,253,254)");
+gradientBottom1.addColorStop(0.15, "rgba(188,218,252)");
+gradientBottom1.addColorStop(0.3, "rgba(244,182,250)");
+gradientBottom1.addColorStop(0.47, "rgba(207,132,247)");
+
+gradientBottom1.addColorStop(0.4701, "rgba(252,255,155)");
+gradientBottom1.addColorStop(0.6, "rgba(254,249,178)");
+gradientBottom1.addColorStop(0.88235, "rgba(243,173,139)");
+
+gradientBottom1.addColorStop(0.88236, "rgba(251,85,48)");
+gradientBottom1.addColorStop(1, "rgba(251,85,48)");
+
+
+
+function drawStatic() {
+  ctxLevel3.fillStyle = color.gap;
+
+  for (let i = 0; i < width; i = i + (geometry.gap + geometry.lampWidth)) {
+    ctxLevel3.fillRect(i, 0, geometry.gap, height);
+  }
+
+  for (let i = 0; i < height; i = i + (geometry.gap + geometry.lampHeight)) {
+    ctxLevel3.fillRect(0, height - i, width, -geometry.gap);
+  }
+}
+
+class HzBar {
+  constructor(data) {
+    this.index = data.index;
+    this.x =
+      this.index * geometry.lampWidth +
+      geometry.gap +
+      geometry.gap * this.index;
+    this.preHeightLampsCount = 0;
+    this.heightLampsCount = 0;
+    this.height = 0;
+    this._bgHeight = 0;
+    this._timeoutCountdown = 0;
+  }
+
+  drawBar() {
+    if (this.heightLampsCount === 0) return;
+
+    ctxLevel2.fillStyle = gradientBottom1;
+    ctxLevel2.fillRect(this.x, height, geometry.lampWidth, -this.height);
+    ctxLevel4.fillRect(this.x, height - this.height, geometry.lampWidth, geometry.capHeight / 2);
+  }
+
+  drawBgBar() {
+    ctxLevel1.fillStyle = color.bgBar;
+
+    if (this._bgHeight < this.height) {
+      this._bgHeight = this.height;
+    } else {
+      this._timeoutCountdown -= 1;
+    }
+
+    if (this._timeoutCountdown <= 0) {
+      this._bgHeight  = this._bgHeight  - geometry.vertCell;
+      this.updateCountdown();
+    }
+
+    ctxLevel1.fillRect(this.x, height, geometry.lampWidth, -this._bgHeight);
+    ctxLevel4.fillRect(this.x, height - this._bgHeight, geometry.lampWidth, geometry.capHeight);
+  }
+
+  updateCountdown() {
+    this._timeoutCountdown = 20; // frames (tick)
+  }
+
+  updateData(newData) {
+    const newCount = Math.trunc(newData / geometry.stepForLampFromData); //12
+
+    if (newCount > this.preHeightLampsCount) {
+      this.heightLampsCount += 1;
+    } else if ( newCount < this.preHeightLampsCount ) {
+      this.heightLampsCount -= 1;
+    }
+
+    this.height = this.heightLampsCount * geometry.vertCell;
+
+    this.drawBar();
+    this.drawBgBar();
+
+    this.preHeightLampsCount = this.heightLampsCount;
+  }
+}
+
 function startAudioVisual() {
   let audio = document.getElementById("audio");
 
   let files = this.files;
   // audio.src = URL.createObjectURL(files[0]);
+
   audio.load();
   audio.play();
   let context = new AudioContext();
   let src = context.createMediaElementSource(audio);
   let analyser = context.createAnalyser();
 
-  // main canvas
-  const canvas = document.getElementById("canvas");
-  canvas.width = window.innerWidth - 100;
-  canvas.height = window.innerHeight - 400;
-  const ctx = canvas.getContext("2d");
-
-  // red canvas
-  const canvasTopRed = document.getElementById("top-red-canvas");
-  canvasTopRed.width = window.innerWidth - 100;
-  canvasTopRed.height = window.innerHeight - 400;
-  const ctxTopRed = canvasTopRed.getContext("2d");
-  ctxTopRed.fillStyle = "rgb(255, 0, 0)";
-
-  // bg canvas
-  const canvasBg = document.getElementById("bg-canvas");
-  canvasBg.width = window.innerWidth - 100;
-  canvasBg.height = window.innerHeight - 400;
-  const ctxBg = canvasBg.getContext("2d");
-  ctxBg.fillStyle = "rgb(90, 40, 108)";
-
   src.connect(analyser);
   analyser.connect(context.destination);
 
   analyser.fftSize = 2 ** 7;
 
-  let bufferLength = analyser.frequencyBinCount;
-
+  const bufferLength = analyser.frequencyBinCount;
   let dataArray = new Uint8Array(bufferLength);
 
-  const WIDTH = canvas.width;
-  const HEIGHT = canvas.height;
-
-  const barWidth = Math.floor(WIDTH / bufferLength - 1);
-  const heightCountSection = 17;
-
-  function drawHzBar(count, currentHeight) {
-    const leftDelta = (barWidth + 1) * count;
-    const levels = Math.trunc(currentHeight / heightCountSection);
-    let rgb = "0,0,0";
-
-    for (let l = 0; l < levels; l++) {
-      if (l < 2) {
-        rgb = "201,243,251";
-      } else if (l < 4) {
-        rgb = "159,202,245";
-      } else if (l < 6) {
-        rgb = "143,142,231";
-      } else if (l < 8) {
-        rgb = "221,140,217";
-      } else if (l < 10) {
-        rgb = "231,120,217";
-      } else if (l < 12) {
-        rgb = "245,109,214";
-      } else if (l < 13) {
-        rgb = "255,89,212";
-      } else if (l <= 16) {
-        rgb = "255,239,48";
-      } else {
-        rgb = "243, 55, 13";
-      }
-
-      ctx.fillStyle = `rgb(${rgb})`;
-      ctx.fillRect(
-        leftDelta,
-        HEIGHT - heightCountSection * l + l,
-        barWidth,
-        heightCountSection - 2
-      );
-
-      if (l === levels - 1)
-        ctxTopRed.fillRect(
-          leftDelta,
-          HEIGHT - heightCountSection * l + l - 1,
-          barWidth,
-          1
-        );
-    }
-  }
-
-  let tempValue = new Array();
-  let countDown = new Array();
-
-  function drawBgBar(count, currentHeight) {
-    const leftDelta = (barWidth + 1) * count;
-
-    // старт
-    if (!tempValue[count]) {
-      tempValue[count] = currentHeight;
-    }
-    if (!countDown[count]) {
-      countDown[count] = 10;
-    }
-
-    // если больше чем текущее
-    if (tempValue[count] <= currentHeight) {
-      tempValue[count] = currentHeight;
-      countDown[count] = 10;
-    } else {
-      countDown[count] = countDown[count] - 1;
-    }
-
-    if (countDown[count] <= 0) {
-      tempValue[count] = tempValue[count] - 10;
-    }
-
-    ctxBg.fillRect(
-      leftDelta,
-      HEIGHT - tempValue[count] + 17,
-      barWidth,
-      tempValue[count]
-    );
-    ctxTopRed.fillRect(leftDelta, HEIGHT - tempValue[count] + 17, barWidth, 2);
-  }
+  const hzBarsArray = [];
+  dataArray.forEach((v, index) => {
+    hzBarsArray.push(new HzBar({ index }));
+  });
 
   function renderFrame() {
+    stats.begin();
+
     analyser.getByteFrequencyData(dataArray);
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
-    ctxTopRed.clearRect(0, 0, WIDTH, HEIGHT);
-    ctxBg.clearRect(0, 0, WIDTH, HEIGHT);
+    // очищаем холсты
+    ctxLevel1.clearRect(0, 0, width, height);
+    ctxLevel2.clearRect(0, 0, width, height);
+    ctxLevel4.clearRect(0, 0, width, height);
 
-    for (let i = 0; i < bufferLength; i++) {
-      const barHeight = (dataArray[i] / 255) * HEIGHT;
+    // Запускаем обновление списка классов
+    hzBarsArray.forEach((item, index) => {
+      item.updateData(dataArray[index]);
+    });
 
-      drawHzBar(i, barHeight);
-      drawBgBar(i, barHeight);
-    }
+    stats.end();
     requestAnimationFrame(renderFrame);
   }
-
   requestAnimationFrame(renderFrame);
 }
 
+drawStatic();
 window.addEventListener("click", startAudioVisual);
