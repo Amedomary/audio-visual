@@ -5,17 +5,23 @@ stats.domElement.style.left = "0px";
 stats.domElement.style.top = "0px";
 document.body.appendChild(stats.domElement);
 
-const fftSize = 2 ** 6;
+const fftSize = 2 ** 8;
+
+const lampWidth = 11; // 32
+const lampHeight = 8; // 16
+const gap = 1; // 2
+const lampHeightCount = 17; // 17
+const capHeight = 2; // 5
 
 const geometry = {
-  lampWidth: 32,
-  lampHeight: 16,
-  gap: 2,
-  lampHeightCount: 17,
-  stepForLampFromData: 255 / 17,
-  vertCell: 16 + 2,
-  horCell: 32 + 2,
-  capHeight: 5,
+  lampWidth: lampWidth,
+  lampHeight: lampHeight,
+  gap: gap,
+  lampHeightCount: lampHeightCount,
+  stepForLampFromData: 255 / lampHeightCount,
+  vertCell: lampHeight + gap,
+  horCell: lampWidth + gap,
+  capHeight: capHeight,
 };
 
 const color = {
@@ -162,14 +168,17 @@ function startAudioVisual() {
   audio.play();
   let context = new AudioContext();
   let src = context.createMediaElementSource(audio);
-  let analyser = context.createAnalyser();
+  let analyserNode = context.createAnalyser();
 
-  src.connect(analyser);
-  analyser.connect(context.destination);
+  src.connect(analyserNode);
+  analyserNode.connect(context.destination);
+  analyserNode.fftSize = fftSize;
 
-  analyser.fftSize = fftSize;
+  analyserNode.maxDecibels = -15;
+  analyserNode.minDecibels = -100;
+  // analyserNode.smoothingTimeConstant = 0.8;
 
-  const bufferLength = analyser.frequencyBinCount;
+  const bufferLength = analyserNode.frequencyBinCount;
   let dataArray = new Uint8Array(bufferLength);
 
   const hzBarsArray = [];
@@ -177,10 +186,11 @@ function startAudioVisual() {
     hzBarsArray.push(new HzBar({ index }));
   });
 
+
   function renderFrame() {
     stats.begin();
 
-    analyser.getByteFrequencyData(dataArray);
+    analyserNode.getByteFrequencyData(dataArray);
     // очищаем холсты
     ctxLevel1.clearRect(0, 0, width, height);
     ctxLevel2.clearRect(0, 0, width, height);
