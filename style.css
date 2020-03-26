@@ -1,5 +1,6 @@
 html {
-  background-color: #0E1F52;
+  background: linear-gradient(30deg, rgba(0,0,0,1) 0%, rgba(4,19,41,1) 14%, rgba(7,19,43,1) 29%, rgba(10,29,58,1) 45%, rgba(26,23,50,1) 64%, rgba(42,10,41,1) 78%, rgba(60,12,42,1) 100%);
+  height: 100%;
 }
 
 #thefile {
@@ -37,6 +38,8 @@ html {
   right: 0;
   bottom: 0;
   z-index: 4;
+  border: 5px solid #080711;
+  background-color: #1A2355;
 }
 
 #level-4-canvas {

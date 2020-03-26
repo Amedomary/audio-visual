@@ -5,8 +5,7 @@ stats.domElement.style.left = "0px";
 stats.domElement.style.top = "0px";
 document.body.appendChild(stats.domElement);
 
-const width = window.innerWidth - 100;
-const height = window.innerHeight - 400;
+const fftSize = 2 ** 6;
 
 const geometry = {
   lampWidth: 32,
@@ -24,6 +23,10 @@ const color = {
   bgBar: "rgb(86,40,191)",
   cap: "rgb(255, 63, 99)",
 };
+
+const width = (geometry.lampWidth + geometry.gap) * (fftSize / 2) + geometry.gap;
+// const width = window.innerWidth - 100;
+const height = (geometry.lampHeight + geometry.gap) * (geometry.lampHeightCount + 1) + geometry.gap;
 
 // level 1 canvas
 const canvasLevel1 = document.getElementById("level-1-canvas");
@@ -96,6 +99,7 @@ class HzBar {
     this.height = 0;
     this._bgHeight = 0;
     this._timeoutCountdown = 0;
+    this.fadingTick = 0;
   }
 
   drawBar() {
@@ -103,7 +107,7 @@ class HzBar {
 
     ctxLevel2.fillStyle = gradientBottom1;
     ctxLevel2.fillRect(this.x, height, geometry.lampWidth, -this.height);
-    ctxLevel4.fillRect(this.x, height - this.height, geometry.lampWidth, geometry.capHeight / 2);
+    ctxLevel4.fillRect(this.x, height - this.height, geometry.lampWidth, geometry.capHeight);
   }
 
   drawBgBar() {
@@ -111,21 +115,23 @@ class HzBar {
 
     if (this._bgHeight < this.height) {
       this._bgHeight = this.height;
+      this.fadingTick = 0;
     } else {
       this._timeoutCountdown -= 1;
     }
 
     if (this._timeoutCountdown <= 0) {
       this._bgHeight  = this._bgHeight  - geometry.vertCell;
-      this.updateCountdown();
+      this.fadingTick = this.fadingTick + 1;
+      this.updateCountdown(this.fadingTick);
     }
 
     ctxLevel1.fillRect(this.x, height, geometry.lampWidth, -this._bgHeight);
     ctxLevel4.fillRect(this.x, height - this._bgHeight, geometry.lampWidth, geometry.capHeight);
   }
 
-  updateCountdown() {
-    this._timeoutCountdown = 20; // frames (tick)
+  updateCountdown(tick) {
+    this._timeoutCountdown = 20 / tick; // frames (tick)
   }
 
   updateData(newData) {
@@ -161,7 +167,7 @@ function startAudioVisual() {
   src.connect(analyser);
   analyser.connect(context.destination);
 
-  analyser.fftSize = 2 ** 7;
+  analyser.fftSize = fftSize;
 
   const bufferLength = analyser.frequencyBinCount;
   let dataArray = new Uint8Array(bufferLength);
