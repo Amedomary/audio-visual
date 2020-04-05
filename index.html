@@ -11,12 +11,17 @@
 <body>
 
   <div id="content">
-    <!-- <input type="file" id="thefile" accept="audio/*" /> -->
+    <label for="file">
+      <img src="./audio.png" alt="" srcset="" id="load-img">
+    </label>
+
     <canvas id="level-1-canvas"></canvas>
     <canvas id="canvas"></canvas>
     <canvas id="level-3-canvas"></canvas>
     <canvas id="level-4-canvas"></canvas>
-    <audio id="audio" controls src="./1.mp3"></audio>
+
+    <input type="file" id="file" />
+    <audio id="audio" controls></audio>
   </div>
 
   <script src="./script.js"></script>

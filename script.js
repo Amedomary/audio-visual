@@ -30,9 +30,12 @@ const color = {
   cap: "rgb(255, 63, 99)",
 };
 
-const width = (geometry.lampWidth + geometry.gap) * (fftSize / 2) + geometry.gap;
+const width =
+  (geometry.lampWidth + geometry.gap) * (fftSize / 2) + geometry.gap;
 // const width = window.innerWidth - 100;
-const height = (geometry.lampHeight + geometry.gap) * (geometry.lampHeightCount + 1) + geometry.gap;
+const height =
+  (geometry.lampHeight + geometry.gap) * (geometry.lampHeightCount + 1) +
+  geometry.gap;
 
 // level 1 canvas
 const canvasLevel1 = document.getElementById("level-1-canvas");
@@ -60,7 +63,6 @@ canvasLevel4.height = height;
 const ctxLevel4 = canvasLevel4.getContext("2d");
 ctxLevel4.fillStyle = color.cap;
 
-
 const gradientBottom1 = ctxLevel2.createLinearGradient(
   0,
   height,
@@ -78,8 +80,6 @@ gradientBottom1.addColorStop(0.88235, "rgba(243,173,139)");
 
 gradientBottom1.addColorStop(0.88236, "rgba(251,85,48)");
 gradientBottom1.addColorStop(1, "rgba(251,85,48)");
-
-
 
 function drawStatic() {
   ctxLevel3.fillStyle = color.gap;
@@ -113,7 +113,12 @@ class HzBar {
 
     ctxLevel2.fillStyle = gradientBottom1;
     ctxLevel2.fillRect(this.x, height, geometry.lampWidth, -this.height);
-    ctxLevel4.fillRect(this.x, height - this.height, geometry.lampWidth, geometry.capHeight);
+    ctxLevel4.fillRect(
+      this.x,
+      height - this.height,
+      geometry.lampWidth,
+      geometry.capHeight
+    );
   }
 
   drawBgBar() {
@@ -127,13 +132,18 @@ class HzBar {
     }
 
     if (this._timeoutCountdown <= 0) {
-      this._bgHeight  = this._bgHeight  - geometry.vertCell;
+      this._bgHeight = this._bgHeight - geometry.vertCell;
       this.fadingTick = this.fadingTick + 1;
       this.updateCountdown(this.fadingTick);
     }
 
     ctxLevel1.fillRect(this.x, height, geometry.lampWidth, -this._bgHeight);
-    ctxLevel4.fillRect(this.x, height - this._bgHeight, geometry.lampWidth, geometry.capHeight);
+    ctxLevel4.fillRect(
+      this.x,
+      height - this._bgHeight,
+      geometry.lampWidth,
+      geometry.capHeight
+    );
   }
 
   updateCountdown(tick) {
@@ -145,7 +155,7 @@ class HzBar {
 
     if (newCount > this.preHeightLampsCount) {
       this.heightLampsCount += 1;
-    } else if ( newCount < this.preHeightLampsCount ) {
+    } else if (newCount < this.preHeightLampsCount) {
       this.heightLampsCount -= 1;
     }
 
@@ -158,17 +168,17 @@ class HzBar {
   }
 }
 
-function startAudioVisual() {
-  let audio = document.getElementById("audio");
+const startDraw = (audio) => {
+  const AudioContext =
+    window.AudioContext || // Default
+    window.webkitAudioContext || // Safari and old versions of Chrome
+    false;
 
-  let files = this.files;
-  // audio.src = URL.createObjectURL(files[0]);
-
-  audio.load();
-  audio.play();
   let context = new AudioContext();
   let src = context.createMediaElementSource(audio);
   let analyserNode = context.createAnalyser();
+
+  audio.volume = 0.05;
 
   src.connect(analyserNode);
   analyserNode.connect(context.destination);
@@ -185,7 +195,6 @@ function startAudioVisual() {
   dataArray.forEach((v, index) => {
     hzBarsArray.push(new HzBar({ index }));
   });
-
 
   function renderFrame() {
     stats.begin();
@@ -205,7 +214,32 @@ function startAudioVisual() {
     requestAnimationFrame(renderFrame);
   }
   requestAnimationFrame(renderFrame);
+};
+
+function startAudioVisual() {
+  const files = this.files;
+  const audio = document.getElementById("audio");
+  audio.src = URL.createObjectURL(files[0]);
+
+  // Show loading animation.
+  const playPromise = audio.play();
+
+  if (playPromise !== undefined) {
+    playPromise
+      .then((_) => {
+        // Automatic playback started!
+        // Show playing UI.
+        startDraw(audio);
+      })
+      .catch((error) => {
+        // Auto-play was prevented
+        // Show paused UI.
+        alert(error);
+      });
+  }
 }
 
 drawStatic();
-window.addEventListener("click", startAudioVisual);
+
+const file = document.getElementById("file");
+file.addEventListener("change", startAudioVisual);
