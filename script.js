@@ -1,10 +1,3 @@
-// var stats = new Stats();
-// stats.setMode(0);
-// stats.domElement.style.position = "absolute";
-// stats.domElement.style.left = "0px";
-// stats.domElement.style.top = "0px";
-// document.body.appendChild(stats.domElement);
-
 const fftSize = 2 ** 8;
 
 const lampWidth = 11; // 32
@@ -197,8 +190,6 @@ const startDraw = (audio) => {
   });
 
   function renderFrame() {
-//     stats.begin();
-
     analyserNode.getByteFrequencyData(dataArray);
     // очищаем холсты
     ctxLevel1.clearRect(0, 0, width, height);
@@ -209,8 +200,7 @@ const startDraw = (audio) => {
     hzBarsArray.forEach((item, index) => {
       item.updateData(dataArray[index]);
     });
-
-//     stats.end();
+    
     requestAnimationFrame(renderFrame);
   }
   requestAnimationFrame(renderFrame);
