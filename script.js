@@ -197,7 +197,7 @@ const startDraw = (audio) => {
   });
 
   function renderFrame() {
-    stats.begin();
+//     stats.begin();
 
     analyserNode.getByteFrequencyData(dataArray);
     // очищаем холсты
@@ -210,7 +210,7 @@ const startDraw = (audio) => {
       item.updateData(dataArray[index]);
     });
 
-    stats.end();
+//     stats.end();
     requestAnimationFrame(renderFrame);
   }
   requestAnimationFrame(renderFrame);
